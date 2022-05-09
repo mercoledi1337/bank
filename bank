@@ -1,0 +1,146 @@
+package banking;
+
+import java.math.BigInteger;
+import java.util.*;
+
+public class Main {
+
+    public static boolean luhn(String card) {
+
+        int nDigits = card.length();
+
+        int nSum = 0;
+        boolean isSecond = false;
+        for (int i = nDigits - 1; i >= 0; i--)
+        {
+
+            int d = card.charAt(i) - '0';
+
+            if (isSecond == true)
+                d = d * 2;
+
+            // We add two digits to handle
+            // cases that make two digits
+            // after doubling
+            nSum += d / 10;
+            nSum += d % 10;
+
+            isSecond = !isSecond;
+        }
+        return (nSum % 10 == 0);
+    }
+
+    public static void createAnAccount(Account[] bank) {
+        Random random = new Random();
+        String card = "";
+        // generating PIN
+        int pin4 = random.nextInt(10);
+        int pin3 = random.nextInt(10);
+        int pin2 = random.nextInt(10);
+        int pin1 = random.nextInt(10);
+        String pin = "" + pin4 + pin3 + pin2 + pin1;
+        // generating card Number
+        BigInteger maxLimit = new BigInteger("4000009999999999");
+        BigInteger minLimit = new BigInteger("4000000000000000");
+        do {
+            BigInteger bigInteger = maxLimit.subtract(minLimit);
+            int len = maxLimit.bitLength();
+            BigInteger cardNumber = new BigInteger(len, random);
+            if (cardNumber.compareTo(minLimit) < 0)
+                cardNumber = cardNumber.add(minLimit);
+            if (cardNumber.compareTo(bigInteger) >= 0)
+                cardNumber = cardNumber.mod(bigInteger).add(minLimit);
+            card = cardNumber.toString();
+
+        } while (!luhn(card));
+
+
+        // printing
+        System.out.println("");
+        System.out.println("Your card has been created");
+        System.out.println("Your card number:");
+        System.out.println(card);
+        System.out.println("Your card PIN:");
+        System.out.println(pin + "\n");
+        // creating acc
+        boolean wynik = true;
+        int i = 0;
+        while (wynik) {
+            if (Objects.equals(bank[i], null)) {
+                Account acc = new Account(pin, card);
+                bank[i] = acc;
+                wynik = false;
+            } else {
+                i++;
+            }
+        }
+    }
+
+    public static void logIntoAccount (Account[] bank) {
+        Scanner scanner = new Scanner(System.in);
+        int i = 0;
+        boolean exit = true;
+        System.out.println("Enter your card number: ");
+        String card = scanner.next();
+        System.out.println("Enter your PIN: ");
+        String pin = scanner.next();
+        while (true) {
+            if (Objects.equals(bank[i].getCardNumber(), card) && Objects.equals(bank[i].getPin(), pin)) {
+                System.out.println("You have successfully logged in!\n");
+                insideAccount(bank, i);
+                break;
+            } else {
+                System.out.println("");
+                System.out.println("Wrong card number or PIN!\n");
+                break;
+            }
+        }
+    }
+
+    public static void insideAccount (Account[] bank, int i) {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.println("1. Balance");
+            System.out.println("2. Log out");
+            System.out.println("0. Exit");
+            int choice = scanner.nextInt();
+            if (choice == 1) {
+                System.out.println("\nBalance: " + bank[i].getBalance() + "\n");
+            } else if (choice == 2) {
+                System.out.println("\nYou have successfully logged out!\n");
+                break;
+            } else if (choice == 0) {
+                System.out.println("Bye!");
+                System.exit(0);
+            } else {
+                throw new IllegalStateException("Unexpected value: " + choice);
+            }
+        }
+    }
+
+
+    public static void main(String[] args) {
+            Scanner scanner = new Scanner(System.in);
+        System.out.println("1. Create an account");
+        System.out.println("2. Log into account");
+        System.out.println("0. Exit");
+        Account[] bank = new Account[1000];
+        while (true) {
+            int choose = scanner.nextInt();
+
+            if (choose == 1) {
+                createAnAccount(bank);
+
+            } else if (choose == 2){ logIntoAccount(bank);
+            } else if (choose == 0) {
+                System.out.println("Bye!");
+                break;
+            } else {
+                System.out.println("Wrong choice!");
+            }
+            System.out.println("1. Create an account");
+            System.out.println("2. Log into account");
+            System.out.println("0. Exit\n");
+        }
+    }
+}
